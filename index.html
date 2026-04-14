@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pumping Lemma — Regular & CFL Languages</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="bg-texture"></div>
+  <div class="bg-grid"></div>
+
+  <!-- ══════════════════════════════════════════════════
+       STICKY NAVBAR
+  ═══════════════════════════════════════════════════ -->
+  <header class="navbar">
+    <!-- Brand -->
+    <div class="navbar-brand">
+      <div class="brand-logo">
+        <span class="brand-logo-inner">PL</span>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">Pumping Lemma <em>Visualizer</em></span>
+        <span class="brand-sub">Formal Language Theory</span>
+      </div>
+    </div>
+
+    <!-- Mode toggle -->
+    <div class="navbar-center">
+      <div class="mode-toggle">
+        <button id="btnModeRegular" class="mode-btn active" data-mode="regular">
+          <span class="mode-dot mode-dot-regular"></span>
+          Regular (RL)
+        </button>
+        <button id="btnModeCFL" class="mode-btn" data-mode="cfl">
+          <span class="mode-dot mode-dot-cfl"></span>
+          CFL — Advanced
+        </button>
+      </div>
+    </div>
+
+    <!-- Theorem pills -->
+    <div class="navbar-theorem" id="navTheorem">
+      <div id="theoremRegular" class="thm-pill-group">
+        <span class="thm-pill">① |y| ≥ 1</span>
+        <span class="thm-pill">② |xy| ≤ p</span>
+        <span class="thm-pill">③ xy<sup>i</sup>z ∈ L</span>
+      </div>
+      <div id="theoremCFL" class="thm-pill-group hidden">
+        <span class="thm-pill thm-pill-cfl">① |vx| ≥ 1</span>
+        <span class="thm-pill thm-pill-cfl">② |vwx| ≤ p</span>
+        <span class="thm-pill thm-pill-cfl">③ uv<sup>i</sup>wx<sup>i</sup>y ∈ L</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════
+       DASHBOARD
+  ═══════════════════════════════════════════════════ -->
+  <div class="dashboard">
+
+    <!-- ─── LEFT PANEL: Controls ─── -->
+    <aside class="panel panel-left">
+
+      <!-- Step 01 — Language -->
+      <div class="ctrl-section">
+        <div class="ctrl-eyebrow">
+          <span class="eyebrow-num">01</span>
+          Language Setup
+        </div>
+
+        <!-- Regular language selector -->
+        <div class="form-group" id="regularLangGroup">
+          <label class="ctrl-label">Choose Language</label>
+          <div class="select-wrap">
+            <select id="languageSelect" class="ctrl-select">
+              <option value="custom">— Custom input —</option>
+              <option value="abn">{ aⁿbⁿ | n ≥ 1 } — NOT Regular</option>
+              <option value="a_star_b_star">{ aⁿbᵐ | n,m ≥ 0 } — Regular</option>
+              <option value="palindrome">{ ww^R | w ∈ {a,b}* } — NOT Regular</option>
+              <option value="equal_ab">{ w | #a(w) = #b(w) } — NOT Regular</option>
+              <option value="prime_len">{ aᵖ | p is prime } — NOT Regular</option>
+              <option value="square_len">{ aⁿ² | n ≥ 1 } — NOT Regular</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CFL language selector -->
+        <div class="form-group hidden" id="cflLangGroup">
+          <label class="ctrl-label">Choose CFL Language</label>
+          <div class="select-wrap">
+            <select id="cflLanguageSelect" class="ctrl-select">
+              <option value="anbncn">{ aⁿbⁿcⁿ | n ≥ 1 } — NOT CFL</option>
+              <option value="wwR_cfl">{ wwᴿ | w ∈ {a,b}* } — IS CFL</option>
+              <option value="anbmcn">{ aⁿbᵐcⁿ | n,m ≥ 0 } — IS CFL</option>
+              <option value="ww_cfl">{ ww | w ∈ {a,b}* } — NOT CFL</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Language description badge -->
+        <div class="lang-badge hidden" id="langDescBadge">
+          <span id="langDescIcon">ℹ</span>
+          <span id="langDescText"></span>
+        </div>
+
+        <!-- Input string -->
+        <div class="form-group">
+          <div class="input-row">
+            <div style="flex:1">
+              <label class="ctrl-label" for="inputString">
+                Input String
+                <span class="label-hint" id="alphabetHint">a, b</span>
+              </label>
+              <div class="input-with-btn">
+                <input type="text" id="inputString" class="ctrl-input"
+                       placeholder="e.g. aaabbb" autocomplete="off" spellcheck="false"/>
+                <button class="btn-gen" id="btnGenExample" title="Generate random example">
+                  <svg viewBox="0 0 16 16" width="14" height="14"><path d="M2 5h2l2 6 2-8 2 8 2-6h2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Example suggestions -->
+        <div class="example-chips" id="exampleChips">
+          <span class="chips-label">Try:</span>
+          <button class="chip" data-val="aaabbb">aaabbb</button>
+          <button class="chip" data-val="aabb">aabb</button>
+          <button class="chip" data-val="abab">abab</button>
+          <button class="chip" data-val="aaaa">aaaa</button>
+          <button class="chip" data-val="aabbcc">aabbcc</button>
+        </div>
+      </div>
+
+      <div class="ctrl-divider"></div>
+
+      <!-- Step 02 — Parameters -->
+      <div class="ctrl-section">
+        <div class="ctrl-eyebrow">
+          <span class="eyebrow-num">02</span>
+          Parameters
+        </div>
+
+        <!-- p slider -->
+        <div class="slim-slider-group">
+          <div class="slider-header">
+            <label class="slim-label" for="pumpingLength">Pumping length <em>p</em></label>
+            <span class="slider-val" id="pumpingLengthVal">3</span>
+          </div>
+          <input type="range" id="pumpingLength" min="1" max="10" value="3" />
+        </div>
+
+        <!-- Regular sliders -->
+        <div id="regularSliders">
+          <div class="slim-slider-group">
+            <div class="slider-header">
+              <label class="slim-label" for="splitX">Prefix length |<strong>x</strong>|</label>
+              <span class="slider-val" id="splitXVal">1</span>
+            </div>
+            <input type="range" id="splitX" min="0" max="5" value="1" />
+          </div>
+          <div class="slim-slider-group">
+            <div class="slider-header">
+              <label class="slim-label" for="splitY">Pump region |<strong>y</strong>| <span class="label-hint">≥1</span></label>
+              <span class="slider-val" id="splitYVal">2</span>
+            </div>
+            <input type="range" id="splitY" min="1" max="5" value="2" />
+          </div>
+        </div>
+
+        <!-- CFL sliders -->
+        <div id="cflSliders" class="hidden">
+          <div class="cfl-split-info">
+            s = <strong>u</strong> · <strong class="cfl-v">v</strong> · <strong>w</strong> · <strong class="cfl-x-part">x</strong> · <strong>y</strong>
+          </div>
+          <div class="slim-slider-group">
+            <div class="slider-header">
+              <label class="slim-label" for="cflSplitU">|<strong>u</strong>|</label>
+              <span class="slider-val" id="cflSplitUVal">1</span>
+            </div>
+            <input type="range" id="cflSplitU" min="0" max="5" value="1" />
+          </div>
+          <div class="slim-slider-group">
+            <div class="slider-header">
+              <label class="slim-label" for="cflSplitV">|<strong class="cfl-v">v</strong>|</label>
+              <span class="slider-val" id="cflSplitVVal">1</span>
+            </div>
+            <input type="range" id="cflSplitV" min="0" max="5" value="1" />
+          </div>
+          <div class="slim-slider-group">
+            <div class="slider-header">
+              <label class="slim-label" for="cflSplitW">|<strong>w</strong>|</label>
+              <span class="slider-val" id="cflSplitWVal">2</span>
+            </div>
+            <input type="range" id="cflSplitW" min="0" max="5" value="2" />
+          </div>
+          <div class="slim-slider-group">
+            <div class="slider-header">
+              <label class="slim-label" for="cflSplitX">|<strong class="cfl-x-part">x</strong>|</label>
+              <span class="slider-val" id="cflSplitXVal">1</span>
+            </div>
+            <input type="range" id="cflSplitX" min="0" max="5" value="1" />
+          </div>
+        </div>
+
+        <!-- Pump count i -->
+        <div class="slim-slider-group">
+          <div class="slider-header">
+            <label class="slim-label" for="pumpCount">Pump count <em>i</em></label>
+            <span class="slider-val" id="pumpCountVal">2</span>
+          </div>
+          <input type="range" id="pumpCount" min="0" max="5" value="2" />
+        </div>
+
+        <!-- Hidden step pump indicator (kept for JS) -->
+        <div class="step-pump-indicator hidden" id="stepPumpIndicator">
+          <span class="step-i-label">i:</span>
+          <span class="step-i-value" id="stepIValue">0</span>
+          <button class="btn-step-i" id="btnNextI">+1</button>
+        </div>
+      </div>
+
+      <div class="ctrl-divider"></div>
+
+      <!-- Action buttons -->
+      <div class="ctrl-section ctrl-actions">
+        <button class="btn-run" id="btnDemonstrate">
+          <svg viewBox="0 0 16 16" width="14" height="14"><polygon points="3,2 13,8 3,14" fill="currentColor"/></svg>
+          Run Demo
+        </button>
+        <button class="btn-reset" id="btnReset">
+          <svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8a5 5 0 1 1 2 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/><polyline points="1,6 3,8 5,6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Reset
+        </button>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend-inline" id="legendPanel">
+        <div id="regularLegend" class="legend-group">
+          <span class="leg-item"><span class="leg-dot dot-x"></span>x</span>
+          <span class="leg-item"><span class="leg-dot dot-y"></span>y</span>
+          <span class="leg-item"><span class="leg-dot dot-z"></span>z</span>
+        </div>
+        <div id="cflLegend" class="legend-group hidden">
+          <span class="leg-item"><span class="leg-dot dot-u"></span>u</span>
+          <span class="leg-item"><span class="leg-dot dot-v"></span>v</span>
+          <span class="leg-item"><span class="leg-dot dot-w"></span>w</span>
+          <span class="leg-item"><span class="leg-dot dot-xp"></span>x</span>
+          <span class="leg-item"><span class="leg-dot dot-yp"></span>y</span>
+        </div>
+      </div>
+
+      <!-- Hint panel -->
+      <div class="hint-inline" id="hintPanel">
+        <span class="hint-icon-sm">💡</span>
+        <span class="hint-text" id="hintText">Select a language to begin.</span>
+        <button class="btn-hint-next" id="btnNextHint">›</button>
+      </div>
+
+    </aside>
+
+    <!-- ─── RIGHT AREA: Visualization panels ─── -->
+    <div class="panel-right">
+
+      <!-- TOP ROW: Decomposition + Counter -->
+      <div class="right-top">
+
+        <!-- Panel 02: String Decomposition -->
+        <div class="vis-card card-decomp" id="visDecomposition">
+          <div class="vc-header">
+            <span class="vc-num" id="vcNumDecomp">02</span>
+            <h2 class="vc-title" id="vcTitleDecomp">String Decomposition</h2>
+            <span class="anim-label hidden" id="animLabel">Pumping…</span>
+          </div>
+          <div class="decomp-scroll">
+            <div class="decomp-chars" id="decompChars">
+              <div class="empty-vis"><span class="empty-glyph">◌</span> Run demonstration to see decomposition</div>
+            </div>
+            <div class="decomp-brackets" id="decompBrackets"></div>
+          </div>
+          <div class="decomp-chips" id="decompInfo"></div>
+        </div>
+
+        <!-- Counter panel -->
+        <div class="vis-card card-counter counter-panel hidden" id="counterPanel">
+          <div class="vc-header">
+            <span class="vc-num">Σ</span>
+            <h2 class="vc-title">Char Counter</h2>
+          </div>
+          <div class="counter-title">Before / After pumping</div>
+          <div class="counter-grid" id="counterGrid"></div>
+        </div>
+
+      </div>
+
+      <!-- MIDDLE ROW: Pumping Simulation -->
+      <div class="vis-card card-pump" id="visPumping">
+        <div class="vc-header">
+          <span class="vc-num">03</span>
+          <h2 class="vc-title" id="vcTitlePump">Pumping Simulation</h2>
+          <span class="contradiction-badge hidden" id="contradictionBadge"></span>
+        </div>
+        <div class="pump-history-header hidden" id="pumpHistoryHeader">
+          All pumped strings (i = 0 → max):
+        </div>
+        <div class="pump-tabs" id="pumpTabs"></div>
+        <div class="pump-display" id="pumpDisplay">
+          <div class="empty-vis"><span class="empty-glyph">◌</span> Pumped strings appear here</div>
+        </div>
+      </div>
+
+      <!-- BOTTOM ROW: Verdict + Proof -->
+      <div class="vis-card card-verdict" id="visVerdict">
+        <div class="vc-header">
+          <span class="vc-num">04</span>
+          <h2 class="vc-title">Verdict &amp; Proof</h2>
+        </div>
+
+        <div class="verdict-proof-row">
+          <!-- Verdict box -->
+          <div class="verdict-box" id="verdictBox">
+            <div class="verdict-placeholder">
+              <span class="vp-icon">✦</span>
+              <p>Run a demonstration to see the verdict</p>
+            </div>
+          </div>
+
+          <!-- Proof steps -->
+          <div class="proof-steps" id="proofSteps"></div>
+        </div>
+
+        <!-- Enhanced output -->
+        <div class="enhanced-output hidden" id="enhancedOutput">
+          <div class="eo-row">
+            <span class="eo-label">Original:</span>
+            <code class="eo-val" id="eoOriginal"></code>
+          </div>
+          <div class="eo-row">
+            <span class="eo-label">Pumped:</span>
+            <code class="eo-val" id="eoPumped"></code>
+          </div>
+          <div class="eo-row">
+            <span class="eo-label">Result:</span>
+            <span class="eo-val eo-reason" id="eoReason"></span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /panel-right -->
+
+  </div><!-- /dashboard -->
+
+  <script src="app.js"></script>
+  <script>
+    // Wire up example chips — fills input field on click
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const val = chip.dataset.val;
+        const input = document.getElementById('inputString');
+        if (input) {
+          input.value = val;
+          input.dispatchEvent(new Event('input'));
+          input.focus();
+          // pulse the chip
+          chip.classList.add('chip-active');
+          setTimeout(() => chip.classList.remove('chip-active'), 600);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
