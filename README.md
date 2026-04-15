@@ -68,11 +68,11 @@ Features:
 ---
 
 ## 📂 Project Structure
-pumping-lemma-visualizer/
--│── index.html
--│── style.css
--│── app.js
--│── README.md
+pumping-lemma-tool/
+│── index.html
+│── style.css
+│── app.js
+│── README.md
 
 ## ⚙️ How to Run
 
@@ -112,7 +112,7 @@ A language is context-free if:
 - `uv^i w x^i y ∈ L`
 
 ---
--**Submitted by:** Ananya
--**Roll No:** 2024UCS1572
+Submitted by: Ananya<br>
+Roll No: 2024UCS1572
 
 
